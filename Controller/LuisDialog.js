@@ -50,7 +50,7 @@ exports.startDialog = function (bot) {
                 currency.displayCurrencyComparison(currencyEntity, session);
 
             } else {
-                session.send('Finding all currency rates...');
+                session.send('Showing sample currency rates...');
                 currency.displayCurrency(session);
             }
         //}

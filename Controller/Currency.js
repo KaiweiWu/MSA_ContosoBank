@@ -13,19 +13,63 @@ exports.displayCurrency = function getExchangeData(session){
 }
 
 function displayCurrency(message, session) {
-    var attachment = [];
     var json = JSON.parse(message);
+
+    var currencyRates = json.rates;
+    var currencyItems = [];
+    var currencyView = ["AUD", "NZD", "USD", "HKD", "BSD"]
+    
+    for(var i = 0; i < currencyView.length; i++){
+        var currencyItem = {};
+        currencyItem.title = currencyView[i];
+        currencyItem.value = currencyRates[currencyView[i]].toString();
+        currencyItems.push(currencyItem);
+    }
     
 
-    for (var i in json.rates) {
-        var card = new builder.HeroCard(session)
-            .title(json.rates[i]);
-        attachment.push(card);
-
-    }
-
-    var message = new builder.Message(session)
-        .attachmentLayout(builder.AttachmentLayout.carousel)
-        .attachments(attachment);
-    session.send(message);
+session.send(new builder.Message(session).addAttachment({
+        contentType: "application/vnd.microsoft.card.adaptive",
+        content: {
+            "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+            "type": "AdaptiveCard",
+            "version": "0.5",
+            "body": [
+                {
+                    "type": "Container",
+                    "items": [
+                        {
+                            "type": "TextBlock",
+                            "text": "Currency rate sample",
+                            "size": "large"
+                        },
+                        {
+                            "type": "TextBlock",
+                            "text": "Your selected currency"
+                        }
+                    ]
+                },
+                {
+                    "type": "Container",
+                    "spacing": "none",
+                    "items": [
+                        {
+                            "type": "ColumnSet",
+                            "columns": [
+                                {
+                                    "type": "Column",
+                                    "width": "auto",
+                                    "items": [
+                                        {
+                                            "type": "FactSet",
+                                            "facts": currencyItems
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    }));
 }
