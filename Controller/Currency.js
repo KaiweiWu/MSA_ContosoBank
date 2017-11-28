@@ -7,17 +7,25 @@ var builder = require('botbuilder');
     rest.getCurrencyData(url,session,displayCurrency);
 }*/
 
-exports.displayCurrency = function getCurrencyData(session){
-    var url ='https://api.fixer.io/latest?base=NZD';
-    rest.getCurrencyData(url,session,displayCurrency);
+exports.displayCurrency = function getExchangeData(session){
+    var url ='https://openexchangerates.org/api/latest.json?app_id=5deb0687deab4609922956518527fa53';
+    rest.getExchangeData(url,session,displayCurrency);
 }
 
 function displayCurrency(message, session) {
     var attachment = [];
     var json = JSON.parse(message);
     
+
     for (var i in json.rates) {
-        attachment.push(json.rates[i]);
+        var card = new builder.HeroCard(session)
+            .title(json.rates[i]);
+        attachment.push(card);
+
     }
-    session.send(attachment);
+
+    var message = new builder.Message(session)
+        .attachmentLayout(builder.AttachmentLayout.carousel)
+        .attachments(attachment);
+    session.send(message);
 }
