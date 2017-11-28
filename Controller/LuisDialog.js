@@ -1,4 +1,5 @@
 var builder = require('botbuilder');
+var currency = require('./Currency');
 // Some sections have been omitted
 
 exports.startDialog = function (bot) {
@@ -36,6 +37,25 @@ exports.startDialog = function (bot) {
         // Insert delete logic here later
     ]).triggerAction({
         matches: 'ChangePassword'
+
+    });
+
+    bot.dialog('ViewCurrency', function (session, args) {
+        //if (!isAttachment(session)) {
+            var currencyEntity = builder.EntityRecognizer.findAllEntities(args.intent.entities, 'currency');
+
+            // Checks if the for entity was found
+            if (currencyEntity.length == 2) {
+                session.send('Checking specified currency rates...');
+                currency.displayCurrencyComparison(currencyEntity, session);
+
+            } else {
+                session.send('Finding all currency rates...');
+                currency.displayCurrency(session);
+            }
+        //}
+    }).triggerAction({
+        matches: 'ViewCurrency'
 
     });
 
