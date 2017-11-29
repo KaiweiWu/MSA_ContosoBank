@@ -21,7 +21,7 @@ exports.getBalances = function getData(url, session, username, callback){
     });
 };
 
-exports.postFavouriteFood = function getData(url, username, favouriteFood){
+exports.postNewAccount = function getData(url, username, balance){
     var options = {
         url: url,
         method: 'POST',
@@ -31,7 +31,7 @@ exports.postFavouriteFood = function getData(url, username, favouriteFood){
         },
         json: {
             "username" : username,
-            "favouriteFood" : favouriteFood
+            "savings" : balance
         }
       };
       

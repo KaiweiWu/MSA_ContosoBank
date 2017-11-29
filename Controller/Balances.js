@@ -23,3 +23,8 @@ function handleBalanceResponse(message, session, username) {
     session.send("%s, your bank balance is: %s", username, balanceArray);                
     
 }
+
+exports.sendNewAccount = function postNewAccount(session, username, balance){
+    var url = 'http://bankbot2.azurewebsites.net/tables/Bankbot';
+    rest.postNewAccount(url, username, balance);
+};
