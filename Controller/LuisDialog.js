@@ -1,5 +1,7 @@
 var builder = require('botbuilder');
 var currency = require('./Currency');
+var balance = require('./Balances');
+var qna = require('./QnAMaker');
 // Some sections have been omitted
 
 exports.startDialog = function (bot) {
@@ -27,16 +29,66 @@ exports.startDialog = function (bot) {
     });
 
     bot.dialog('ViewIntent', [
-        // Insert delete logic here later
+        function (session, args, next) {
+            session.dialogData.args = args || {};        
+            if (!session.conversationData["username"]) {
+                builder.Prompts.text(session, "Enter a username to setup your account.");                
+            } else {
+                next(); // Skip if we already have this info.
+            }
+        },
+        function (session, results, next) {
+            //if (!isAttachment(session)) {
+
+                if (results.response) {
+                    session.conversationData["username"] = results.response;
+                }
+
+                session.send("Retrieving bank balance");
+                balance.showBalances(session, session.conversationData["username"]);  // <---- THIS LINE HERE IS WHAT WE NEED 
+            //}
+        }
     ]).triggerAction({
         matches: 'ViewIntent'
-
     });
 
     bot.dialog('ChangePassword', [
         // Insert delete logic here later
     ]).triggerAction({
         matches: 'ChangePassword'
+
+    });
+
+    bot.dialog('RegisterAccount', [
+        function (session, args, next) {
+            session.dialogData.args = args || {};        
+            if (!session.conversationData["username"]) {
+                builder.Prompts.text(session, "Enter a username to setup your account.");                
+            } else {
+                next(); // Skip if we already have this info.
+            }
+        },
+        function (session, results, next) {
+            if (!isAttachment(session)) {
+
+                if (results.response) {
+                    session.conversationData["username"] = results.response;
+                }
+                // Pulls out the food entity from the session if it exists
+                var foodEntity = builder.EntityRecognizer.findEntity(session.dialogData.args.intent.entities, 'food');
+    
+                // Checks if the food entity was found
+                if (foodEntity) {
+                    session.send('Thanks for telling me that \'%s\' is your favourite food', foodEntity.entity);
+                    food.sendFavouriteFood(session, session.conversationData["username"], foodEntity.entity); // <-- LINE WE WANT
+    
+                } else {
+                    session.send("No food identified!!!");
+                }
+            }
+        }
+    ]).triggerAction({
+        matches: 'RegisterAccount'
 
     });
 
@@ -57,6 +109,18 @@ exports.startDialog = function (bot) {
     }).triggerAction({
         matches: 'ViewCurrency'
 
+    });
+
+    bot.dialog('QnA', [
+        function (session, args, next) {
+            session.dialogData.args = args || {};
+            builder.Prompts.text(session, "What is your question?");
+        },
+        function (session, results, next) {
+            qna.talkToQnA(session, results.response);
+        }
+    ]).triggerAction({
+         matches: 'QnA'
     });
 
 }
