@@ -28,3 +28,39 @@ exports.sendNewAccount = function postNewAccount(session, username, balance){
     var url = 'http://bankbot2.azurewebsites.net/tables/Bankbot';
     rest.postNewAccount(url, username, balance);
 };
+
+exports.transferMoney = function updateBalance(session, amount, username, recipient){
+    var url  = 'http://bankbot2.azurewebsites.net/tables/Bankbot';
+
+    rest.getBalances(url, session, username, function(message, session, username){
+     var balances = JSON.parse(message);
+
+        for(var i in balances) {
+
+            if (balances[i].username === username) {
+                var updatedVal = balances[i].savings - parseInt(amount.slice(2));
+
+                rest.updateBalance(url,session,username,updatedVal,balances[i].id,handleResponse)
+
+            }
+        }
+    });
+
+    rest.getBalances(url, session, recipient, function(message, session, recipient){
+    var balances = JSON.parse(message);
+
+        for(var i in balances) {
+
+            if (balances[i].username === recipient) {
+                var updatedVal = balances[i].savings + parseInt(amount.slice(2));
+
+                rest.updateBalance(url,session,recipient,updatedVal,balances[i].id,handleResponse)
+
+            }
+        }
+    });
+};
+
+function handleResponse(body, session, amount, username, recipient){
+        console.log('Done');
+}

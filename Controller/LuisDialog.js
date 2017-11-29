@@ -21,7 +21,7 @@ exports.startDialog = function (bot) {
                 next();
 
             } else {
-                session.send("Please try again with different phrasing");
+                session.send("Please add how much you would like to transfer.");
             }
             
         },
@@ -46,6 +46,7 @@ exports.startDialog = function (bot) {
                 session.conversationData["recipient"] = results.response;
             }
             session.send("We can now proceed...");
+            balance.transferMoney(session, session.conversationData["amount"], session.conversationData["username"], session.conversationData["recipient"]); 
 
         }
     ]).triggerAction({
@@ -62,15 +63,12 @@ exports.startDialog = function (bot) {
             }
         },
         function (session, results, next) {
-            //if (!isAttachment(session)) {
+            if (results.response) {
+                session.conversationData["username"] = results.response;
+            }
 
-                if (results.response) {
-                    session.conversationData["username"] = results.response;
-                }
-
-                session.send("Retrieving bank balance");
-                balance.showBalances(session, session.conversationData["username"]);  // <---- THIS LINE HERE IS WHAT WE NEED 
-            //}
+            session.send("Retrieving bank balance");
+            balance.showBalances(session, session.conversationData["username"]);  // <---- THIS LINE HERE IS WHAT WE NEED 
         }
     ]).triggerAction({
         matches: 'ViewIntent'
@@ -107,19 +105,17 @@ exports.startDialog = function (bot) {
     });
 
     bot.dialog('ViewCurrency', function (session, args) {
-        //if (!isAttachment(session)) {
-            var currencyEntity = builder.EntityRecognizer.findAllEntities(args.intent.entities, 'currency');
+        var currencyEntity = builder.EntityRecognizer.findAllEntities(args.intent.entities, 'currency');
 
-            // Checks if the for entity was found
-            if (currencyEntity.length == 2) {
-                session.send('Checking specified currency rates...');
-                currency.displayCurrencyComparison(currencyEntity, session);
+        // Checks if the for entity was found
+        if (currencyEntity.length == 2) {
+            session.send('Checking specified currency rates...');
+            currency.displayCurrencyComparison(currencyEntity, session);
 
-            } else {
-                session.send('Showing sample currency rates...');
-                currency.displayCurrency(session);
-            }
-        //}
+        } else {
+            session.send('Showing sample currency rates...');
+            currency.displayCurrency(session);
+        }
     }).triggerAction({
         matches: 'ViewCurrency'
 

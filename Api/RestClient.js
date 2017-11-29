@@ -67,3 +67,29 @@ exports.postQnAResults = function getData(url, session, question, callback){
       }
     });
 };
+
+exports.updateBalance = function getData(url, session, username, updatedVal, id, callback){
+    var options = {
+        url: url + "\\" + id,
+        method: 'PATCH',
+        headers: {
+            'ZUMO-API-VERSION': '2.0.0',
+            'Content-Type':'application/json'
+        },
+        json: {
+            "username" : username,
+            "savings" : updatedVal
+        }
+    };
+
+    request(options,function (err, res, body){
+        if( !err && res.statusCode === 200){
+            console.log(body);
+            callback(body, session, username);
+        }else {
+            console.log(err);
+            console.log(res);
+        }
+    })
+
+};
