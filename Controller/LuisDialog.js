@@ -11,20 +11,44 @@ exports.startDialog = function (bot) {
 
     bot.recognizer(recognizer);
 
-    bot.dialog('TransferIntent', function (session, args) {
-        //if (!isAttachment(session)) {
+    bot.dialog('TransferIntent', [
+        function (session, args, next) {
             var moneyEntity = builder.EntityRecognizer.findEntity(args.intent.entities, 'dollars');
 
-            // Checks if the for entity was found
             if (moneyEntity) {
                 session.send('You wish to transfer %s...', moneyEntity.entity);
-               // Here you would call a function
+                session.conversationData["amount"] = moneyEntity.entity;
+                next();
 
             } else {
                 session.send("Please try again with different phrasing");
             }
-        //}
-    }).triggerAction({
+            
+        },
+        function (session, args, next) {
+            session.dialogData.args = args || {};
+            if (!session.conversationData["username"]) {
+                builder.Prompts.text(session, "Enter a username to setup your account.");
+            } else {
+                next();
+            }
+        },
+        function (session, results, next) {
+
+            if (results.response) {
+                session.conversationData["username"] = results.response;
+            }
+
+            builder.Prompts.text(session, "Enter the recipient for this transfer");
+        },
+        function (session, results, next) {
+            if (results.response) {
+                session.conversationData["recipient"] = results.response;
+            }
+            session.send("We can now proceed...");
+
+        }
+    ]).triggerAction({
         matches: 'TransferIntent'
     });
 
